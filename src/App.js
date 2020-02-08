@@ -1,26 +1,71 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { component } from "react";
+import Todo from "./component/Todo";
+import AddTodo from "./component/AddTodo";
+import Header from"./component/Header";
+import axios from "axios";
 
-function App() {
+import "./App.css";
+
+class App extends React.Component {
+  state = {
+    todos: [],
+    isLoading: false
+  };
+
+  componentDidMount() {
+    const context = this
+    this.setState({isLoading: true}, () =>
+    axios
+    .get("http://murmuring-eyrie-68644.herokuapp.com/todos")
+    .then(res =>
+      context.setState({
+      todos: res.data,
+      isLoading: false
+      })
+    )
+    )
+}
+
+markComplete = id => {
+  this.setState({
+    todos: this.state.todos.map(todo => {
+      if(todo._id === id) {
+        todo.status = !todo.status;
+      }
+      return todo;
+    })
+  });
+};
+
+AddTodo = kegiatan => {
+  axios
+    .post("http://murmuring-eyrie-68644.herokuapp.com/todos", {
+      kegiatan,
+      status: false
+    })
+    .then(res =>
+      this.setState({
+        todos: [...this.state.todos, res.data]
+      })
+      );
+};
+
+render() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
-}
+      <div className="containe">
+        <Header />
+        <AddTodo AddTodo={this.AddTodo} />{" "}
+        {this.state.isLoading? <div>Lagi loading...</div>:
+        
+        <Todo
+        todos={this.state.todos}
+        markComplete={this.markComplete}
+        />}
+      </div>{" "}
+      </div>
+    );
+  }
+ }
 
 export default App;
